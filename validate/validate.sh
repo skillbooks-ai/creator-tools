@@ -49,6 +49,66 @@ fi
 
 echo ""
 
+# ─── Agent Skills Compliance ──────────────────────
+echo "🔒 Agent Skills compliance"
+
+if [[ -f "$BOOK_PATH/SKILL.md" ]]; then
+  # Extract frontmatter (between first two --- lines)
+  _AS_FM=$(awk '/^---$/{n++; next} n==1{print} n>=2{exit}' "$BOOK_PATH/SKILL.md")
+
+  # --- name validation ---
+  AS_NAME=$(echo "$_AS_FM" | grep "^name:" | head -1 | sed 's/^name:[[:space:]]*//')
+  DIR_NAME=$(basename "$BOOK_PATH")
+
+  if [[ -z "$AS_NAME" ]]; then
+    error "Agent Skills spec: 'name' field is missing or empty"
+  else
+    # Length: 1-64 characters
+    name_len=${#AS_NAME}
+    if (( name_len > 64 )); then
+      error "Agent Skills spec: 'name' must be 1-64 chars (got $name_len)"
+    fi
+
+    # Only lowercase alphanumeric and hyphens
+    if [[ ! "$AS_NAME" =~ ^[a-z0-9-]+$ ]]; then
+      error "Agent Skills spec: 'name' may only contain lowercase a-z, 0-9, and hyphens (got '$AS_NAME')"
+    fi
+
+    # Must not start or end with hyphen
+    if [[ "$AS_NAME" == -* ]] || [[ "$AS_NAME" == *- ]]; then
+      error "Agent Skills spec: 'name' must not start or end with a hyphen (got '$AS_NAME')"
+    fi
+
+    # No consecutive hyphens
+    if [[ "$AS_NAME" == *--* ]]; then
+      error "Agent Skills spec: 'name' must not contain consecutive hyphens (got '$AS_NAME')"
+    fi
+
+    # Must match parent directory name
+    if [[ "$AS_NAME" != "$DIR_NAME" ]]; then
+      error "Agent Skills spec: 'name' must match parent directory name (name='$AS_NAME', dir='$DIR_NAME')"
+    else
+      ok "name '$AS_NAME' matches directory and passes all constraints"
+    fi
+  fi
+
+  # --- description validation ---
+  AS_DESC=$(echo "$_AS_FM" | grep "^description:" | head -1 | sed 's/^description:[[:space:]]*//')
+
+  if [[ -z "$AS_DESC" ]]; then
+    error "Agent Skills spec: 'description' field is missing or empty"
+  else
+    desc_len=${#AS_DESC}
+    if (( desc_len > 1024 )); then
+      error "Agent Skills spec: 'description' must be 1-1024 chars (got $desc_len)"
+    else
+      ok "description present ($desc_len chars)"
+    fi
+  fi
+fi
+
+echo ""
+
 # ─── SKILL.md Frontmatter ──────────────────────
 echo "📋 SKILL.md frontmatter"
 

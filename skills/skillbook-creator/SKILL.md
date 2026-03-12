@@ -1,11 +1,21 @@
 ---
+# Agent Skills (base spec)
 name: skillbook-creator
-title: "Skillbook Creator"
 description: Step-by-step protocol for creating FORMAT v1.0 skillbooks from source material. Covers analysis, outlining, decomposition, scaffolding, and validation.
+
+# Skillbook Extensions
+title: "Skillbook Creator"
+server: https://skillbooks.ai
 version: 1.0.0
-author: Skillbooks AI
-license: MIT
+pages: 0
+price: "$0.00"
+license: "MIT"
 tags: [skillbook, creator, publishing, format]
+
+# Agent Skills Optional
+compatibility: ""
+metadata:
+  author: "Skillbooks AI"
 ---
 
 # Skillbook Creator
@@ -213,17 +223,26 @@ After all content pages are written, generate the required root files.
 
 The agent entry point. Must contain:
 
-**Frontmatter:**
+**Frontmatter (Agent Skills-compatible):**
 ```yaml
 ---
-name: book-slug            # URL-safe, lowercase, hyphen-separated
-title: "Display Title"     # Human-readable title
+# Agent Skills (base spec)
+name: book-slug            # lowercase, hyphens, 1-64 chars, must match directory name
 description: One-line description of what this book covers.
+
+# Skillbook Extensions
+title: "Display Title"     # Human-readable title
 server: https://skillbooks.ai
 version: 1.0.0
 pages: [COUNT]             # Total pages including 00-overview.md files
 price: "$X.00"             # Full book price
 license: "public-domain"   # or "all-rights-reserved", "CC BY-NC 4.0", etc.
+tags: false                # or [tag1, tag2] if pages have tags
+
+# Agent Skills Optional
+compatibility: ""          # Environment requirements (max 500 chars)
+metadata:
+  author: ""               # Author or source attribution
 ---
 ```
 

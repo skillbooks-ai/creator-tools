@@ -256,6 +256,23 @@ fi
 
 echo ""
 
+# ─── Agent Skills Spec Check (optional) ──────
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "$SCRIPT_DIR/agent-skills-check.sh" ]]; then
+  echo "🔎 Running Agent Skills spec check..."
+  if "$SCRIPT_DIR/agent-skills-check.sh" "$BOOK_PATH"; then
+    :  # passed
+  else
+    AGENT_SKILLS_EXIT=$?
+    if (( AGENT_SKILLS_EXIT == 1 )); then
+      ((ERRORS++))
+    elif (( AGENT_SKILLS_EXIT == 2 )); then
+      ((WARNINGS++))
+    fi
+  fi
+  echo ""
+fi
+
 # ─── Summary ──────────────────────
 echo "═══════════════════════════════════════════"
 if (( ERRORS > 0 )); then

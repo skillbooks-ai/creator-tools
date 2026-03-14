@@ -243,7 +243,7 @@ metadata:
 1. Browse the Table of Contents below to find relevant sections
 2. Fetch pages by constructing URLs: `{server}/{name}/{path}`
 3. Include your API key in the `X-Skillbook-Key` header
-4. Without a key, you'll receive a 402 response with signup info
+4. Without a key, you'll receive a 402 response with `/start` activation info
 
 SKILL.md and TAG-INDEX.json are always free. Content pages cost credits.
 ```
@@ -489,7 +489,7 @@ All creator tools are accessed through the `skillbook` CLI:
 | `skillbook init [path]` | Initialize a new skillbook project (interactive) |
 | `skillbook index <path>` | Build TAG-INDEX.json + regenerate SKILL.md TOC |
 | `skillbook account` | Show credit balance, account type, publisher status |
-| `skillbook signup` | Open the get-started page (buyer or publisher path) |
+| `skillbook start` | Open the `/start` page (reader checkout or publisher onboarding) |
 | `skillbook publish <path>` | Push to the platform *(coming soon)* |
 
 ---

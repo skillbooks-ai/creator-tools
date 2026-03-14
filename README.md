@@ -1,6 +1,11 @@
-# Creator Tools
+# Skillbook Creator Tools
 
-Tools for Skillbook authors — build, validate, index, and publish books on the Skillbooks platform.
+CLI tools for creating, validating, and publishing skillbooks on the [Skillbooks](https://skillbooks.ai) platform.
+
+## Related
+
+- **[Skillbook Format Spec](https://github.com/skillbooks-ai/skillbook)** — the standard that defines the skillbook format
+- **[Skillbook Authoring Guide](https://github.com/skillbooks-ai/skillbook-authoring)** — a complete guide for AI agents helping humans create skillbooks (itself a skillbook)
 
 ## Quick Start
 
@@ -20,7 +25,7 @@ skillbook index ./my-book
 # Check your account
 skillbook account
 
-# Sign up
+# Open activation flow
 skillbook signup
 ```
 
@@ -28,19 +33,21 @@ skillbook signup
 
 | Command | What it does |
 |---------|-------------|
-| `skillbook validate <path>` | Check structure against FORMAT v1.0 |
+| `skillbook validate <path>` | Check structure against the skillbook format spec |
 | `skillbook init [path]` | Initialize a new skillbook project (interactive) |
 | `skillbook index <path>` | Build TAG-INDEX.json + regenerate SKILL.md TOC |
 | `skillbook account` | Show credit balance, account type, publisher status |
-| `skillbook signup` | Open the get-started page |
+| `skillbook signup` | Open the `/start` page |
 | `skillbook publish <path>` | Push to the platform *(coming soon)* |
 
 ## Validation
 
 The validator checks:
-- Required root files (SKILL.md, README.md, book.json)
-- SKILL.md frontmatter fields
-- book.json required fields
+- Required root files (SKILL.md, README.md, package.json)
+- SKILL.md frontmatter fields (name, description per AgentSkills spec)
+- SKILL.md metadata block (skillbook-title, skillbook-server, etc.)
+- package.json required fields and `skillbook` config block
+- Sync between SKILL.md and package.json (name, version, description, license)
 - Section structure (every section has `00-overview.md`)
 - TOC link integrity (all paths resolve, no orphan pages)
 - Tag consistency (TAG-INDEX.json matches frontmatter)
@@ -64,11 +71,10 @@ Options:
 
 The `verify/` directory contains a multi-pass pipeline for checking factual claims against source documents. See [verify/README.md](verify/README.md).
 
-## Authoring Skill
+## Authoring Guide
 
-The `skills/skillbook-creator/SKILL.md` is an agent skill that walks through the full authoring process — from source analysis to published book.
+For a comprehensive guide on creating high-quality skillbooks, see the **[Skillbook Authoring Guide](https://github.com/skillbooks-ai/skillbook-authoring)** — it walks through source analysis, content strategy, page writing, validation, and publishing.
 
-## Platform Docs
+## License
 
-- [FORMAT.md](../FORMAT.md) — canonical directory layout and book.json schema
-- [Skillbooks README](../README.md) — platform overview
+MIT

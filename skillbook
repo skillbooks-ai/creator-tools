@@ -4,7 +4,7 @@
 #
 # Commands:
 #   validate <path>    Validate a skillbook against FORMAT v1.0
-#   scaffold <path>    Generate skeleton structure from source material
+#   init [path]        Initialize a new skillbook project (interactive)
 #   index <path>       Build TAG-INDEX.json + regenerate SKILL.md TOC
 #   account            Show credit balance and publisher status
 #   signup             Open the Skillbooks signup page
@@ -24,13 +24,14 @@ Usage: skillbook <command> [args...]
 
 Commands:
   validate <path>    Validate a skillbook against FORMAT v1.0
-  scaffold <path>    Generate skeleton structure from source material
+  init [path]        Initialize a new skillbook project (interactive)
   index <path>       Build TAG-INDEX.json and regenerate SKILL.md TOC
   account            Show credit balance and publisher status
   signup             Open the Skillbooks get-started page
   publish <path>     Publish a skillbook to the platform (coming soon)
 
 Examples:
+  skillbook init ./books
   skillbook validate ./my-book
   skillbook index ./my-book
   skillbook signup
@@ -44,9 +45,9 @@ case "${1:-help}" in
     shift
     exec bash "$SCRIPT_DIR/validate/validate.sh" "$@"
     ;;
-  scaffold)
+  init)
     shift
-    exec bash "$SCRIPT_DIR/scaffold/scaffold.sh" "$@"
+    exec bash "$SCRIPT_DIR/init/init.sh" "$@"
     ;;
   index)
     shift

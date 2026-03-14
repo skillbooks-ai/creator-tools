@@ -8,6 +8,9 @@ Tools for Skillbook authors — build, validate, index, and publish books on the
 # Make the CLI available
 export PATH="/path/to/creator-tools:$PATH"
 
+# Start a new skillbook
+skillbook init ./books
+
 # Validate your book
 skillbook validate ./my-book
 
@@ -26,7 +29,7 @@ skillbook signup
 | Command | What it does |
 |---------|-------------|
 | `skillbook validate <path>` | Check structure against FORMAT v1.0 |
-| `skillbook scaffold <path>` | Generate skeleton from source material |
+| `skillbook init [path]` | Initialize a new skillbook project (interactive) |
 | `skillbook index <path>` | Build TAG-INDEX.json + regenerate SKILL.md TOC |
 | `skillbook account` | Show credit balance, account type, publisher status |
 | `skillbook signup` | Open the get-started page |

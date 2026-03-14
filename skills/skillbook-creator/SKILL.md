@@ -20,16 +20,16 @@ You are creating a **skillbook** — a structured knowledge base designed for AI
 
 You need:
 1. **Source material** — text files, PDFs, markdown, or URLs containing the content to convert
-2. **A working directory** — where you'll build the book
+2. **An initialized project** — run `skillbook init` to set one up
 3. **The FORMAT v1.0 spec** — embedded in this skill below
 
-Create your working directory:
-```
-mkdir my-book && cd my-book
-mkdir source
+Initialize your project:
+```bash
+skillbook init ./books
+# Follow the prompts: slug, title, description, author, license, price
 ```
 
-Place all source material in `source/`. Supported formats: `.txt`, `.md`, `.pdf`, `.html`
+This creates a ready-to-fill directory with SKILL.md, README.md, book.json, sources/, and a starter section. Place your source material in `sources/`. Supported formats: `.txt`, `.md`, `.pdf`, `.html`
 
 ---
 
@@ -464,7 +464,7 @@ All creator tools are accessed through the `skillbook` CLI:
 | Command | Action |
 |---------|--------|
 | `skillbook validate <path>` | Check structure against FORMAT v1.0 |
-| `skillbook scaffold <path>` | Generate skeleton directory structure |
+| `skillbook init [path]` | Initialize a new skillbook project (interactive) |
 | `skillbook index <path>` | Build TAG-INDEX.json + regenerate SKILL.md TOC |
 | `skillbook account` | Show credit balance, account type, publisher status |
 | `skillbook signup` | Open the get-started page (buyer or publisher path) |

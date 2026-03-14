@@ -16,13 +16,11 @@ echo "  📚 Skillbook Init"
 echo "═══════════════════════════════════════════"
 echo ""
 
-# Book slug (used for directory name, URLs, book.json id)
 read -rp "  Book slug (lowercase, hyphens, e.g. art-of-war): " SLUG
 if [[ -z "$SLUG" ]]; then
   echo "  ❌ Slug is required."
   exit 1
 fi
-# Validate slug format
 if [[ ! "$SLUG" =~ ^[a-z0-9][a-z0-9-]*[a-z0-9]$ ]]; then
   echo "  ❌ Slug must be lowercase alphanumeric with hyphens (e.g. my-book)"
   exit 1
@@ -34,10 +32,16 @@ TITLE="${TITLE:-$SLUG}"
 read -rp "  One-line description: " DESCRIPTION
 DESCRIPTION="${DESCRIPTION:-A skillbook about $TITLE.}"
 
-read -rp "  Author name: " AUTHOR
-AUTHOR="${AUTHOR:-Anonymous}"
+read -rp "  Publisher (your name/handle, e.g. brookr): " PUBLISHER
+PUBLISHER="${PUBLISHER:-anonymous}"
 
-read -rp "  License (e.g. public-domain, CC BY-NC 4.0, all-rights-reserved): " LICENSE
+read -rp "  Content author (original author, or press Enter if same as publisher): " CONTENT_AUTHOR
+CONTENT_AUTHOR="${CONTENT_AUTHOR:-$PUBLISHER}"
+
+read -rp "  Contact email (optional): " CONTACT
+CONTACT="${CONTACT:-}"
+
+read -rp "  License (e.g. all-rights-reserved, CC-BY-NC-4.0): " LICENSE
 LICENSE="${LICENSE:-all-rights-reserved}"
 
 read -rp "  Language code (default: en): " LANGUAGE
@@ -66,17 +70,29 @@ mkdir -p "$BOOK_DIR/01-foundations"
 echo "  📁 Created $BOOK_DIR/"
 
 # ─── SKILL.md ──────────────────────
+# Build metadata block
+METADATA_BLOCK="metadata:
+  skillbook-title: \"$TITLE\"
+  skillbook-author: \"$CONTENT_AUTHOR\"
+  skillbook-server: \"https://skillbooks.ai\"
+  skillbook-version: \"1.0.0\"
+  skillbook-pages: \"0\"
+  skillbook-price: \"$PRICE\""
+
+if [[ -n "$CONTACT" ]]; then
+  METADATA_BLOCK="$METADATA_BLOCK
+  skillbook-contact: \"$CONTACT\""
+fi
+
 cat > "$BOOK_DIR/SKILL.md" << SKILLEOF
 ---
 name: $SLUG
-title: "$TITLE"
-description: $DESCRIPTION
-server: https://skillbooks.ai
-version: 1.0.0
-pages: 0
-price: "$PRICE"
+description: >-
+  $DESCRIPTION
+author: $PUBLISHER
 license: "$LICENSE"
-tags: true
+compatibility: "Requires HTTPS access to https://skillbooks.ai"
+$METADATA_BLOCK
 ---
 
 # $TITLE
@@ -129,37 +145,55 @@ $DESCRIPTION
 - **Pages:** 0
 - **Sections:** 0
 - **License:** $LICENSE
-- **Author:** $AUTHOR
+- **Author:** $CONTENT_AUTHOR
 - **Sources:** See \`sources/SOURCES.md\`
 - **Last Updated:** $(date +%Y-%m-%d)
 READMEEOF
 
 echo "  ✅ README.md"
 
-# ─── book.json ──────────────────────
-cat > "$BOOK_DIR/book.json" << BOOKEOF
+# ─── package.json ──────────────────────
+# Build contact line if provided
+CONTACT_LINE=""
+if [[ -n "$CONTACT" ]]; then
+  CONTACT_LINE="    \"contact\": \"$CONTACT\","
+fi
+
+cat > "$BOOK_DIR/package.json" << PKGEOF
 {
-  "id": "$SLUG",
-  "title": "$TITLE",
-  "description": "$DESCRIPTION",
+  "name": "$SLUG",
   "version": "1.0.0",
-  "author": "$AUTHOR",
-  "language": "$LANGUAGE",
+  "description": "$DESCRIPTION",
+  "author": "$PUBLISHER",
   "license": "$LICENSE",
-  "verified": false,
-  "sources": {
-    "enabled": true,
-    "path": "sources/",
-    "index": "sources/SOURCES.md"
+  "keywords": [],
+  "private": true,
+  "devDependencies": {
+    "@skillbooks/cli": "^1.0.0"
   },
-  "structure": {
-    "readme": "README.md",
-    "tagIndex": "TAG-INDEX.json"
+  "scripts": {
+    "validate": "skillbook validate .",
+    "index": "skillbook index ."
+  },
+  "skillbook": {
+    "title": "$TITLE",
+    "author": "$CONTENT_AUTHOR",
+${CONTACT_LINE}
+    "server": "https://skillbooks.ai",
+    "pages": 0,
+    "price": "$PRICE",
+    "language": "$LANGUAGE",
+    "verified": false,
+    "sources": {
+      "enabled": true,
+      "path": "sources/",
+      "index": "sources/SOURCES.md"
+    }
   }
 }
-BOOKEOF
+PKGEOF
 
-echo "  ✅ book.json"
+echo "  ✅ package.json"
 
 # ─── sources/SOURCES.md ──────────────────────
 cat > "$BOOK_DIR/sources/SOURCES.md" << SRCEOF
@@ -170,7 +204,7 @@ cat > "$BOOK_DIR/sources/SOURCES.md" << SRCEOF
 
 | File | Source | Date Accessed | License |
 |------|--------|---------------|---------|
-| <!-- example.pdf --> | <!-- Where it came from --> | <!-- 2026-03-14 --> | <!-- Public Domain --> |
+| <!-- example.pdf --> | <!-- Where it came from --> | <!-- $(date +%Y-%m-%d) --> | <!-- Public Domain --> |
 SRCEOF
 
 echo "  ✅ sources/SOURCES.md"
@@ -199,6 +233,7 @@ echo "  ✅ 01-foundations/00-overview.md"
 cat > "$BOOK_DIR/.gitignore" << GIEOF
 _build/
 .verify/
+node_modules/
 .DS_Store
 GIEOF
 

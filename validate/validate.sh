@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# validate.sh — Validate a skillbook against FORMAT.md v1.0
+# validate.sh — Validate a skillbook against FORMAT v1.1
 # Usage: ./validate.sh /path/to/my-book
 #
 # Exit codes:
@@ -21,7 +21,7 @@ ok()    { echo "  ✅ $1"; }
 info()  { echo "  ℹ️  $1"; }
 
 echo "═══════════════════════════════════════════"
-echo "  Skillbook Validator v1.0"
+echo "  Skillbook Validator v1.1"
 echo "  Book: $BOOK_PATH"
 echo "═══════════════════════════════════════════"
 echo ""
@@ -41,10 +41,14 @@ else
   error "README.md not found (required for catalog listing)"
 fi
 
-if [[ -f "$BOOK_PATH/book.json" ]]; then
-  ok "book.json exists"
+if [[ -f "$BOOK_PATH/package.json" ]]; then
+  ok "package.json exists"
 else
-  error "book.json not found"
+  error "package.json not found"
+  # Check for legacy book.json
+  if [[ -f "$BOOK_PATH/book.json" ]]; then
+    warn "Found book.json — this was replaced by package.json in FORMAT v1.1"
+  fi
 fi
 
 echo ""
@@ -56,13 +60,47 @@ if [[ -f "$BOOK_PATH/SKILL.md" ]]; then
   # Extract frontmatter (between first two --- lines)
   FRONTMATTER=$(awk '/^---$/{n++; next} n==1{print} n>=2{exit}' "$BOOK_PATH/SKILL.md")
 
-  for field in name title description server version pages price license; do
+  # Agent Skills standard fields
+  for field in name description license; do
     if echo "$FRONTMATTER" | grep -q "^${field}:"; then
-      ok "frontmatter: $field"
+      ok "frontmatter: $field (Agent Skills)"
     else
       error "frontmatter missing required field: $field"
     fi
   done
+
+  # Recommended Agent Skills fields
+  for field in author compatibility; do
+    if echo "$FRONTMATTER" | grep -q "^${field}:"; then
+      ok "frontmatter: $field (Agent Skills)"
+    else
+      warn "frontmatter missing recommended field: $field"
+    fi
+  done
+
+  # Skillbook extension fields under metadata
+  if echo "$FRONTMATTER" | grep -q "^metadata:"; then
+    ok "frontmatter: metadata block"
+
+    for field in skillbook-title skillbook-server skillbook-version skillbook-pages skillbook-price; do
+      if echo "$FRONTMATTER" | grep -q "skillbook-${field#skillbook-}:"; then
+        ok "metadata: $field"
+      else
+        error "metadata missing required field: $field"
+      fi
+    done
+
+    # Recommended metadata fields
+    for field in skillbook-author; do
+      if echo "$FRONTMATTER" | grep -q "$field:"; then
+        ok "metadata: $field"
+      else
+        warn "metadata missing recommended field: $field"
+      fi
+    done
+  else
+    error "frontmatter missing metadata block (skillbook extension fields)"
+  fi
 
   # Check for License section in body
   if grep -q "^## License" "$BOOK_PATH/SKILL.md"; then
@@ -74,28 +112,78 @@ fi
 
 echo ""
 
-# ─── book.json Fields ──────────────────────
-echo "📦 book.json"
+# ─── package.json Fields ──────────────────────
+echo "📦 package.json"
 
-if [[ -f "$BOOK_PATH/book.json" ]]; then
-  for field in id title version language verified; do
-    if python3 -c "import json; d=json.load(open('$BOOK_PATH/book.json')); assert '$field' in d" 2>/dev/null; then
-      ok "book.json: $field"
+if [[ -f "$BOOK_PATH/package.json" ]]; then
+  # Standard npm fields
+  for field in name version license; do
+    if python3 -c "import json; d=json.load(open('$BOOK_PATH/package.json')); assert '$field' in d and d['$field']" 2>/dev/null; then
+      ok "package.json: $field"
     else
-      error "book.json missing required field: $field"
+      error "package.json missing required field: $field"
     fi
   done
 
-  # Check structure.readme
-  if python3 -c "import json; d=json.load(open('$BOOK_PATH/book.json')); assert d.get('structure',{}).get('readme')" 2>/dev/null; then
-    ok "book.json: structure.readme"
+  # Recommended npm fields
+  for field in description author; do
+    if python3 -c "import json; d=json.load(open('$BOOK_PATH/package.json')); assert '$field' in d and d['$field']" 2>/dev/null; then
+      ok "package.json: $field"
+    else
+      warn "package.json missing recommended field: $field"
+    fi
+  done
+
+  # Check private: true
+  if python3 -c "import json; d=json.load(open('$BOOK_PATH/package.json')); assert d.get('private') == True" 2>/dev/null; then
+    ok "package.json: private: true"
   else
-    error "book.json missing structure.readme"
+    warn "package.json should have private: true (prevents accidental npm publish)"
   fi
 
-  # Warn if structure.summary still exists (removed in v1.0)
-  if python3 -c "import json; d=json.load(open('$BOOK_PATH/book.json')); assert d.get('structure',{}).get('summary')" 2>/dev/null; then
-    warn "book.json still has structure.summary — removed in FORMAT v1.0"
+  # Skillbook config
+  if python3 -c "import json; d=json.load(open('$BOOK_PATH/package.json')); assert 'skillbook' in d" 2>/dev/null; then
+    ok "package.json: skillbook config"
+
+    for field in title server pages price language verified; do
+      if python3 -c "import json; d=json.load(open('$BOOK_PATH/package.json')); assert '$field' in d['skillbook']" 2>/dev/null; then
+        ok "skillbook.$field"
+      else
+        error "package.json missing skillbook.$field"
+      fi
+    done
+  else
+    error "package.json missing skillbook config block"
+  fi
+
+  # Sync checks: package.json ↔ SKILL.md
+  if [[ -f "$BOOK_PATH/SKILL.md" ]]; then
+    # Check name sync
+    PKG_NAME=$(python3 -c "import json; print(json.load(open('$BOOK_PATH/package.json')).get('name',''))" 2>/dev/null || echo "")
+    SKILL_NAME=$(awk '/^---$/{n++; next} n==1{print} n>=2{exit}' "$BOOK_PATH/SKILL.md" | grep "^name:" | sed 's/^name:[[:space:]]*//')
+    if [[ -n "$PKG_NAME" && -n "$SKILL_NAME" ]]; then
+      if [[ "$PKG_NAME" == "$SKILL_NAME" ]]; then
+        ok "sync: name matches (package.json ↔ SKILL.md)"
+      else
+        error "sync: name mismatch — package.json='$PKG_NAME' vs SKILL.md='$SKILL_NAME'"
+      fi
+    fi
+
+    # Check version sync
+    PKG_VER=$(python3 -c "import json; print(json.load(open('$BOOK_PATH/package.json')).get('version',''))" 2>/dev/null || echo "")
+    SKILL_VER=$(awk '/^---$/{n++; next} n==1{print} n>=2{exit}' "$BOOK_PATH/SKILL.md" | grep "skillbook-version:" | sed 's/.*skillbook-version:[[:space:]]*//' | tr -d '"')
+    if [[ -n "$PKG_VER" && -n "$SKILL_VER" ]]; then
+      if [[ "$PKG_VER" == "$SKILL_VER" ]]; then
+        ok "sync: version matches ($PKG_VER)"
+      else
+        error "sync: version mismatch — package.json='$PKG_VER' vs SKILL.md='$SKILL_VER'"
+      fi
+    fi
+  fi
+
+  # Warn on legacy book.json
+  if [[ -f "$BOOK_PATH/book.json" ]]; then
+    warn "book.json still present — replaced by package.json in FORMAT v1.1. Consider removing."
   fi
 fi
 
@@ -188,7 +276,7 @@ if [[ -f "$BOOK_PATH/SKILL.md" ]]; then
 import re, sys
 with open(sys.argv[1]) as f:
     content = f.read()
-# Strip fenced code blocks (```...```)
+# Strip fenced code blocks
 content = re.sub(r'\`\`\`[\s\S]*?\`\`\`', '', content)
 # Now extract backtick-quoted paths from remaining content
 for m in re.finditer(r'\x60([0-9]{2}-[^\x60]+\.md)\x60', content):
@@ -230,12 +318,10 @@ echo ""
 # ─── Tag Consistency ──────────────────────
 echo "🏷️  Tags"
 
-# Collect all tags from page frontmatter
 HAS_TAGS=false
 
-for page in $(find "$BOOK_PATH" -path "$BOOK_PATH/sources" -prune -o -path "$BOOK_PATH/.verify" -prune -o -name "*.md" -print | sort); do
+for page in $(find "$BOOK_PATH" -path "$BOOK_PATH/sources" -prune -o -path "$BOOK_PATH/.verify" -prune -o -path "$BOOK_PATH/node_modules" -prune -o -name "*.md" -print | sort); do
   [[ -f "$page" ]] || continue
-  # Check if file has tags in frontmatter
   if head -20 "$page" | grep -q "^tags:"; then
     HAS_TAGS=true
   fi
@@ -248,13 +334,13 @@ if $HAS_TAGS; then
     error "Pages have tags in frontmatter but TAG-INDEX.json is missing. Run: skillbook index $BOOK_PATH"
   fi
 
-  # Check SKILL.md frontmatter has tags: true
+  # Check SKILL.md metadata has skillbook-tags: "true"
   if [[ -f "$BOOK_PATH/SKILL.md" ]]; then
     FRONTMATTER=$(awk '/^---$/{n++; next} n==1{print} n>=2{exit}' "$BOOK_PATH/SKILL.md")
-    if echo "$FRONTMATTER" | grep -q "^tags:.*true"; then
-      ok "SKILL.md frontmatter: tags: true"
+    if echo "$FRONTMATTER" | grep -q "skillbook-tags:.*true"; then
+      ok "SKILL.md metadata: skillbook-tags: true"
     else
-      warn "Pages have tags but SKILL.md frontmatter doesn't have tags: true"
+      warn "Pages have tags but SKILL.md metadata doesn't have skillbook-tags: \"true\""
     fi
   fi
 else

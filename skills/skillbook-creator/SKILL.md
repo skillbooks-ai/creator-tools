@@ -1,7 +1,7 @@
 ---
 name: skillbook-creator
 title: "Skillbook Creator"
-description: Step-by-step protocol for creating FORMAT v1.0 skillbooks from source material. Covers analysis, outlining, decomposition, scaffolding, and validation.
+description: Step-by-step protocol for creating FORMAT v1.1 skillbooks from source material. Covers analysis, outlining, decomposition, initialization, and validation.
 version: 1.0.0
 author: Skillbooks AI
 license: MIT
@@ -21,7 +21,7 @@ You are creating a **skillbook** — a structured knowledge base designed for AI
 You need:
 1. **Source material** — text files, PDFs, markdown, or URLs containing the content to convert
 2. **An initialized project** — run `skillbook init` to set one up
-3. **The FORMAT v1.0 spec** — embedded in this skill below
+3. **The FORMAT v1.1 spec** — embedded in this skill below
 
 Initialize your project:
 ```bash
@@ -29,7 +29,7 @@ skillbook init ./books
 # Follow the prompts: slug, title, description, author, license, price
 ```
 
-This creates a ready-to-fill directory with SKILL.md, README.md, book.json, sources/, and a starter section. Place your source material in `sources/`. Supported formats: `.txt`, `.md`, `.pdf`, `.html`
+This creates a ready-to-fill directory with SKILL.md, README.md, package.json, sources/, and a starter section. Place your source material in `sources/`. Supported formats: `.txt`, `.md`, `.pdf`, `.html`
 
 ---
 
@@ -213,17 +213,26 @@ After all content pages are written, generate the required root files.
 
 The agent entry point. Must contain:
 
-**Frontmatter:**
+**Frontmatter (Agent Skills standard + Skillbook extensions):**
 ```yaml
 ---
-name: book-slug            # URL-safe, lowercase, hyphen-separated
-title: "Display Title"     # Human-readable title
-description: One-line description of what this book covers.
-server: https://skillbooks.ai
-version: 1.0.0
-pages: [COUNT]             # Total pages including 00-overview.md files
-price: "$X.00"             # Full book price
-license: "public-domain"   # or "all-rights-reserved", "CC BY-NC 4.0", etc.
+# === Agent Skills standard fields ===
+name: book-slug
+description: >-
+  One-line description of what this book covers.
+author: publisher-handle
+license: "all-rights-reserved"
+compatibility: "Requires HTTPS access to https://skillbooks.ai"
+
+# === Skillbook extension fields (under metadata) ===
+metadata:
+  skillbook-title: "Display Title"
+  skillbook-author: "Original Content Author"
+  skillbook-server: "https://skillbooks.ai"
+  skillbook-version: "1.0.0"
+  skillbook-pages: "[COUNT]"
+  skillbook-price: "$X.00"
+  skillbook-tags: "true"
 ---
 ```
 
@@ -297,31 +306,45 @@ Human-facing catalog content. Write for human operators who decide whether to ad
 - **Last Updated:** [date]
 ```
 
-### 4c. book.json
+### 4c. package.json
+
+Standard npm project manifest with skillbook config under the `skillbook` key:
 
 ```json
 {
-  "id": "book-slug",
-  "title": "Display Title",
-  "description": "One-line description.",
+  "name": "book-slug",
   "version": "1.0.0",
-  "author": "Author or source attribution",
-  "language": "en",
-  "verified": false,
-  "sources": {
-    "enabled": true,
-    "path": "sources/",
-    "index": "sources/SOURCES.md"
+  "description": "One-line description.",
+  "author": "publisher-handle",
+  "license": "all-rights-reserved",
+  "keywords": ["topic1", "topic2"],
+  "private": true,
+  "devDependencies": {
+    "@skillbooks/cli": "^1.0.0"
   },
-  "structure": {
-    "readme": "README.md",
-    "tagIndex": "TAG-INDEX.json"
+  "scripts": {
+    "validate": "skillbook validate .",
+    "index": "skillbook index ."
+  },
+  "skillbook": {
+    "title": "Display Title",
+    "author": "Original Content Author",
+    "server": "https://skillbooks.ai",
+    "pages": 0,
+    "price": "$X.00",
+    "language": "en",
+    "verified": false,
+    "sources": {
+      "enabled": true,
+      "path": "sources/",
+      "index": "sources/SOURCES.md"
+    }
   }
 }
 ```
 
-If the book has no `sources/` directory, omit the `sources` block.
-If no pages have tags, omit `structure.tagIndex`.
+If the book has no `sources/` directory, omit the `skillbook.sources` block.
+`name` and `version` must match the corresponding fields in SKILL.md frontmatter.
 
 ### 4d. TAG-INDEX.json and TOC (generated)
 
@@ -463,7 +486,7 @@ All creator tools are accessed through the `skillbook` CLI:
 
 | Command | Action |
 |---------|--------|
-| `skillbook validate <path>` | Check structure against FORMAT v1.0 |
+| `skillbook validate <path>` | Check structure against FORMAT v1.1 |
 | `skillbook init [path]` | Initialize a new skillbook project (interactive) |
 | `skillbook index <path>` | Build TAG-INDEX.json + regenerate SKILL.md TOC |
 | `skillbook account` | Show credit balance, account type, publisher status |

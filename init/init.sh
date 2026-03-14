@@ -241,6 +241,19 @@ GIEOF
 
 echo "  ✅ .gitignore"
 
+# ─── .env.local ──────────────────────
+cat > "$BOOK_DIR/.env.local" << ENVEOF
+# Skillbooks API Key
+# Get yours at: https://skillbooks.ai/start → "Start publishing"
+# After signup, paste your key here:
+SKILLBOOK_KEY=
+
+# Optional: override the default API endpoint
+# SKILLBOOK_API=https://skillbooks.ai/api
+ENVEOF
+
+echo "  ✅ .env.local"
+
 # ─── Done ──────────────────────
 echo ""
 echo "═══════════════════════════════════════════"

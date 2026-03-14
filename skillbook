@@ -16,6 +16,17 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 VERSION="1.1.0"
 
+# Load .env.local if present (simple dotenv for bash)
+if [[ -f ".env.local" ]]; then
+  set -a
+  # Source only lines that look like KEY=VALUE (skip comments and blanks)
+  while IFS= read -r line; do
+    [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+    eval "export $line" 2>/dev/null || true
+  done < ".env.local"
+  set +a
+fi
+
 usage() {
   cat <<EOF
 skillbook v$VERSION — Skillbooks Creator Tools

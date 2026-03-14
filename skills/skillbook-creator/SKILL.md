@@ -35,7 +35,7 @@ This creates a ready-to-fill directory with SKILL.md, README.md, package.json, s
 
 ## Step 1: Analyze Sources
 
-Read everything in `source/`. Build a mental model of:
+Read everything in `sources/`. Build a mental model of:
 
 - **Scope:** What topics does this material cover?
 - **Structure:** How is the original organized? (chapters, sections, articles, letters, acts/scenes)
@@ -73,7 +73,7 @@ Write your analysis to `_build/analysis.md`:
 
 ## Step 2: Design the Outline
 
-Based on your analysis, design the section/page structure following FORMAT v1.0 rules:
+Based on your analysis, design the section/page structure following FORMAT v1.1 rules:
 
 ### Naming Rules (MUST follow exactly)
 - **Section folders:** `NN-topic-name/` — 2-digit prefix, kebab-case, lowercase
@@ -386,9 +386,9 @@ skillbook index /path/to/my-book --dry-run
 Run the validation checklist:
 
 ### Structure Checks
-- [ ] `SKILL.md` exists at root with valid frontmatter (all required fields)
+- [ ] `SKILL.md` exists at root with Agent Skills frontmatter + `metadata.skillbook-*` fields
 - [ ] `README.md` exists at root
-- [ ] `book.json` exists at root with required fields
+- [ ] `package.json` exists with `skillbook` config block
 - [ ] `## License` section exists in SKILL.md
 - [ ] Every section folder has a `00-overview.md`
 
@@ -403,8 +403,7 @@ Run the validation checklist:
 - [ ] `00-overview.md` "Pages in This Section" lists match actual folder contents
 - [ ] Cross-references point to files that exist
 - [ ] If tags exist, TAG-INDEX.json matches page frontmatter
-- [ ] Page count in SKILL.md frontmatter matches actual page count
-- [ ] book.json `id` matches SKILL.md `name`
+- [ ] `package.json` ↔ SKILL.md sync: name, version, description, license, skillbook fields
 
 ### Fix any errors before publishing.
 
@@ -471,7 +470,7 @@ Revenue split: **80% author, 20% platform.** Platform absorbs payment processing
 
 ## Reference Implementations
 
-These published skillbooks demonstrate FORMAT v1.0 in different domains:
+These published skillbooks demonstrate the FORMAT in different domains:
 
 - **EPA 608** — exam prep (government regulation source)
 - **EU AI Act** — legal compliance (regulatory text)

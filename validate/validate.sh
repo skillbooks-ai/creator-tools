@@ -156,29 +156,83 @@ if [[ -f "$BOOK_PATH/package.json" ]]; then
     error "package.json missing skillbook config block"
   fi
 
-  # Sync checks: package.json ↔ SKILL.md
+  # Sync checks: package.json ↔ SKILL.md (FORMAT v1.1 sync rules)
   if [[ -f "$BOOK_PATH/SKILL.md" ]]; then
-    # Check name sync
-    PKG_NAME=$(python3 -c "import json; print(json.load(open('$BOOK_PATH/package.json')).get('name',''))" 2>/dev/null || echo "")
-    SKILL_NAME=$(awk '/^---$/{n++; next} n==1{print} n>=2{exit}' "$BOOK_PATH/SKILL.md" | grep "^name:" | sed 's/^name:[[:space:]]*//')
-    if [[ -n "$PKG_NAME" && -n "$SKILL_NAME" ]]; then
-      if [[ "$PKG_NAME" == "$SKILL_NAME" ]]; then
-        ok "sync: name matches (package.json ↔ SKILL.md)"
-      else
-        error "sync: name mismatch — package.json='$PKG_NAME' vs SKILL.md='$SKILL_NAME'"
-      fi
-    fi
+    FRONTMATTER_RAW=$(awk '/^---$/{n++; next} n==1{print} n>=2{exit}' "$BOOK_PATH/SKILL.md")
 
-    # Check version sync
-    PKG_VER=$(python3 -c "import json; print(json.load(open('$BOOK_PATH/package.json')).get('version',''))" 2>/dev/null || echo "")
-    SKILL_VER=$(awk '/^---$/{n++; next} n==1{print} n>=2{exit}' "$BOOK_PATH/SKILL.md" | grep "skillbook-version:" | sed 's/.*skillbook-version:[[:space:]]*//' | tr -d '"')
-    if [[ -n "$PKG_VER" && -n "$SKILL_VER" ]]; then
-      if [[ "$PKG_VER" == "$SKILL_VER" ]]; then
-        ok "sync: version matches ($PKG_VER)"
-      else
-        error "sync: version mismatch — package.json='$PKG_VER' vs SKILL.md='$SKILL_VER'"
+    # Use Python for reliable YAML-aware field extraction
+    skill_field() {
+      python3 -c "
+import sys, re
+fm = sys.argv[1]
+field = sys.argv[2]
+# Simple YAML parser: handles inline values and multi-line >- / |
+lines = fm.split('\n')
+found = False
+value = ''
+for i, line in enumerate(lines):
+    if line.startswith(field + ':'):
+        raw = line[len(field)+1:].strip()
+        if raw in ('>-', '>', '|', '|-'):
+            # Multi-line: collect indented continuation lines
+            parts = []
+            for j in range(i+1, len(lines)):
+                if lines[j] and (lines[j][0] == ' ' or lines[j][0] == '\t'):
+                    parts.append(lines[j].strip())
+                else:
+                    break
+            value = ' '.join(parts)
+        else:
+            value = raw.strip('\"').strip(\"'\")
+        found = True
+        break
+if found:
+    print(value)
+" "$FRONTMATTER_RAW" "$1" 2>/dev/null || echo ""
+    }
+    # Helper: extract metadata field (strips quotes)
+    skill_meta() {
+      echo "$FRONTMATTER_RAW" | grep "[[:space:]]${1}:" | head -1 | sed "s/.*${1}:[[:space:]]*//" | tr -d '"' | tr -d "'"
+    }
+    # Helper: extract package.json field
+    pkg_field() {
+      python3 -c "import json; v=json.load(open('$BOOK_PATH/package.json')).get('$1',''); print(str(v) if v is not None else '')" 2>/dev/null || echo ""
+    }
+    # Helper: extract package.json skillbook.* field
+    pkg_sb() {
+      python3 -c "import json; v=json.load(open('$BOOK_PATH/package.json')).get('skillbook',{}).get('$1',''); print(str(v) if v is not None else '')" 2>/dev/null || echo ""
+    }
+
+    # Sync check helper
+    sync_check() {
+      local label="$1" pkg_val="$2" skill_val="$3" level="${4:-error}"
+      if [[ -z "$pkg_val" || -z "$skill_val" ]]; then
+        return  # skip if either side is missing (caught by field checks above)
       fi
-    fi
+      if [[ "$pkg_val" == "$skill_val" ]]; then
+        ok "sync: $label matches"
+      else
+        if [[ "$level" == "warn" ]]; then
+          warn "sync: $label mismatch — package.json='$pkg_val' vs SKILL.md='$skill_val'"
+        else
+          error "sync: $label mismatch — package.json='$pkg_val' vs SKILL.md='$skill_val'"
+        fi
+      fi
+    }
+
+    # Standard fields: name, version, description, author, license
+    sync_check "name" "$(pkg_field name)" "$(skill_field name)"
+    sync_check "version" "$(pkg_field version)" "$(skill_meta skillbook-version)"
+    sync_check "description" "$(pkg_field description)" "$(skill_field description)" "warn"
+    sync_check "author" "$(pkg_field author)" "$(skill_field author)" "warn"
+    sync_check "license" "$(pkg_field license)" "$(skill_field license)"
+
+    # Skillbook fields: title, author, pages, price, server
+    sync_check "skillbook.title" "$(pkg_sb title)" "$(skill_meta skillbook-title)"
+    sync_check "skillbook.author" "$(pkg_sb author)" "$(skill_meta skillbook-author)" "warn"
+    sync_check "skillbook.pages" "$(pkg_sb pages)" "$(skill_meta skillbook-pages)"
+    sync_check "skillbook.price" "$(pkg_sb price)" "$(skill_meta skillbook-price)"
+    sync_check "skillbook.server" "$(pkg_sb server)" "$(skill_meta skillbook-server)"
   fi
 
   # Warn on legacy book.json

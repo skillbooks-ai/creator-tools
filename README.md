@@ -1,59 +1,71 @@
 # Creator Tools
 
-This directory contains tools and resources for Spellbook authors — the people building and maintaining books on the platform.
-
----
-
-## What Are Creator Tools?
-
-Creator tools are reusable scripts and agent task prompts that help you:
-
-- **Verify your book** — confirm that every factual claim traces back to its source
-- **Audit your content** — find uncited assertions, misquoted regulations, and misleading exam tips
-- **Maintain quality** — keep your book accurate as source materials change
-
-These tools are designed to work with any Spellbook, not just specific ones. They use a `BOOK_PATH` variable so you can point them at whatever book you're working on.
-
----
-
-## Available Tools
-
-### `verify/` — Verification Pipeline
-
-A multi-pass pipeline that reads your book's source documents and checks every factual claim.
-
-**When to use it:** Before publishing a new book, or after making significant content updates.
-
-**Prerequisites:** Your book must have a `sources/` folder with a `SOURCES.md` index file. See [FORMAT.md](../FORMAT.md) for details.
-
-→ [Read the verification docs](verify/README.md)
-
----
+Tools for Skillbook authors — build, validate, index, and publish books on the Skillbooks platform.
 
 ## Quick Start
 
-1. Make sure your book has `sources/SOURCES.md`
-2. Run `creator-tools/verify/run-verify.sh` with `BOOK_PATH` set to your book directory
-3. Follow the instructions it prints to spawn each verification pass as an agent
-
 ```bash
-export BOOK_PATH=/path/to/your/book
-bash /path/to/spellbook/creator-tools/verify/run-verify.sh
+# Make the CLI available
+export PATH="/path/to/creator-tools:$PATH"
+
+# Validate your book
+skillbook validate ./my-book
+
+# Build tag index + TOC
+skillbook index ./my-book
+
+# Check your account
+skillbook account
+
+# Sign up
+skillbook signup
 ```
 
----
+## Commands
 
-## Adding New Tools
+| Command | What it does |
+|---------|-------------|
+| `skillbook validate <path>` | Check structure against FORMAT v1.0 |
+| `skillbook scaffold <path>` | Generate skeleton from source material |
+| `skillbook index <path>` | Build TAG-INDEX.json + regenerate SKILL.md TOC |
+| `skillbook account` | Show credit balance, account type, publisher status |
+| `skillbook signup` | Open the get-started page |
+| `skillbook publish <path>` | Push to the platform *(coming soon)* |
 
-If you build a new creator tool, add it here as a subdirectory with its own `README.md`. Follow the same pattern:
+## Validation
 
-- Parameterize with `BOOK_PATH` — don't hardcode book-specific paths
-- Include a shell script entry point where possible
-- Document prerequisites clearly
+The validator checks:
+- Required root files (SKILL.md, README.md, book.json)
+- SKILL.md frontmatter fields
+- book.json required fields
+- Section structure (every section has `00-overview.md`)
+- TOC link integrity (all paths resolve, no orphan pages)
+- Tag consistency (TAG-INDEX.json matches frontmatter)
+- Page length guidelines (40-100 lines target)
 
----
+Note: the validator correctly skips links inside fenced code blocks and inline backticks.
+
+## Indexing
+
+`skillbook index` does two things in one pass:
+
+1. **TAG-INDEX.json** — scans all content page frontmatter for `tags:` fields and builds the tag→pages map
+2. **SKILL.md TOC** — scans the directory structure, reads page titles, and regenerates the `## Table of Contents` section
+
+Options:
+- `--tags-only` — only rebuild TAG-INDEX.json
+- `--toc-only` — only rebuild the TOC
+- `--dry-run` — show what would change without writing
+
+## Verification Pipeline
+
+The `verify/` directory contains a multi-pass pipeline for checking factual claims against source documents. See [verify/README.md](verify/README.md).
+
+## Authoring Skill
+
+The `skills/skillbook-creator/SKILL.md` is an agent skill that walks through the full authoring process — from source analysis to published book.
 
 ## Platform Docs
 
-- [FORMAT.md](../FORMAT.md) — canonical directory layout, `book.json` schema, and author guide
-- [Spellbook README](../README.md) — platform overview
+- [FORMAT.md](../FORMAT.md) — canonical directory layout and book.json schema
+- [Skillbooks README](../README.md) — platform overview

@@ -1,29 +1,23 @@
 # Scaffold
 
-Generate structural files required by FORMAT.md v1.0.
+Generate the skeleton directory structure for a new skillbook.
 
-## scaffold-overviews.sh
-
-Generates `00-overview.md` files for every section folder that doesn't have one.
+## Usage
 
 ```bash
-./scaffold-overviews.sh /path/to/my-book           # skip existing
-./scaffold-overviews.sh /path/to/my-book --force    # overwrite existing
+skillbook scaffold /path/to/my-book
 ```
 
-Generated files include TODO comments — fill them in with actual descriptions before publishing.
+Creates the initial folder structure based on an outline. Overview files (`00-overview.md`) are the author's responsibility — the validator checks they exist, but `scaffold` only creates the directory structure and placeholder content pages.
 
-## What It Generates
+## What It Creates
 
-For each `NN-section/` folder:
-- Creates `00-overview.md` with:
-  - Section title (derived from folder name)
-  - Placeholder "what this section covers" description
-  - Placeholder "when to read this section" guidance
-  - File index listing every `NN-*.md` page in the folder
+- Section directories (`NN-topic-name/`)
+- Placeholder content pages
+- Root files: `SKILL.md`, `README.md`, `book.json`
 
-## When to Use
+## What It Does NOT Create
 
-- After creating a new book structure manually
-- After running a Gutenberg pipeline (to fill in any missing overviews)
-- When converting an existing book to FORMAT v1.0 (which requires `00-overview.md` in every section)
+- `00-overview.md` files — write these yourself (they need real descriptions)
+- `TAG-INDEX.json` — run `skillbook index` after adding tags
+- Content — that's your job

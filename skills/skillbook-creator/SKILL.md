@@ -323,17 +323,27 @@ Human-facing catalog content. Write for human operators who decide whether to ad
 If the book has no `sources/` directory, omit the `sources` block.
 If no pages have tags, omit `structure.tagIndex`.
 
-### 4d. TAG-INDEX.json (if pages have tags)
+### 4d. TAG-INDEX.json and TOC (generated)
 
-Build a flat JSON map of tag → page paths:
+Don't build these by hand. After all content pages are written, run:
 
-```json
-{
-  "tag-name": [
-    "01-section/01-page.md",
-    "03-section/02-page.md"
-  ]
-}
+```bash
+skillbook index /path/to/my-book
+```
+
+This command:
+1. Scans all page frontmatter for `tags:` fields → builds `TAG-INDEX.json`
+2. Scans directory structure → regenerates the `## Table of Contents` in SKILL.md
+
+You can run them separately:
+```bash
+skillbook index /path/to/my-book --tags-only
+skillbook index /path/to/my-book --toc-only
+```
+
+Or preview without writing:
+```bash
+skillbook index /path/to/my-book --dry-run
 ```
 
 ### 4e. sources/SOURCES.md (if source material is included)
@@ -375,16 +385,21 @@ Run the validation checklist:
 
 ### Fix any errors before publishing.
 
-If a validation tool is available, run:
+Run validation:
 ```bash
-bash validate.sh /path/to/book
+skillbook validate /path/to/book
 ```
 
 ---
 
 ## Step 6: Publish
 
-### Option A: Git Repository
+```bash
+# Coming soon:
+skillbook publish /path/to/my-book
+```
+
+For now, push to a git repository:
 ```bash
 cd my-book
 git init
@@ -393,9 +408,6 @@ git commit -m "Initial publish: [Book Title] v1.0.0"
 git remote add origin https://github.com/skillbooks-ai/skillbook-[name].git
 git push -u origin main
 ```
-
-### Option B: Output Directory
-If you don't have git access, ensure all files are in the output directory and report completion.
 
 ---
 
@@ -442,6 +454,21 @@ These published skillbooks demonstrate FORMAT v1.0 in different domains:
 - **EU AI Act** — legal compliance (regulatory text)
 - **thrv JTBD** — business methodology (proprietary framework)
 - **Shakespeare Complete** — literary reference (774 pages, 37 plays)
+
+---
+
+## CLI Reference
+
+All creator tools are accessed through the `skillbook` CLI:
+
+| Command | Action |
+|---------|--------|
+| `skillbook validate <path>` | Check structure against FORMAT v1.0 |
+| `skillbook scaffold <path>` | Generate skeleton directory structure |
+| `skillbook index <path>` | Build TAG-INDEX.json + regenerate SKILL.md TOC |
+| `skillbook account` | Show credit balance, account type, publisher status |
+| `skillbook signup` | Open the get-started page (buyer or publisher path) |
+| `skillbook publish <path>` | Push to the platform *(coming soon)* |
 
 ---
 

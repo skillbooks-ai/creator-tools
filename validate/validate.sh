@@ -182,8 +182,18 @@ echo ""
 echo "🔗 TOC link validation"
 
 if [[ -f "$BOOK_PATH/SKILL.md" ]]; then
-  # Extract backtick-quoted paths from TOC
-  toc_paths=$(grep -oE '`[0-9][0-9]-[^`]+\.md`' "$BOOK_PATH/SKILL.md" | tr -d '`' || true)
+  # Strip fenced code blocks and inline backticks before extracting TOC paths
+  # This prevents false matches on example paths in documentation
+  toc_paths=$(python3 -c "
+import re, sys
+with open(sys.argv[1]) as f:
+    content = f.read()
+# Strip fenced code blocks (```...```)
+content = re.sub(r'\`\`\`[\s\S]*?\`\`\`', '', content)
+# Now extract backtick-quoted paths from remaining content
+for m in re.finditer(r'\x60([0-9]{2}-[^\x60]+\.md)\x60', content):
+    print(m.group(1))
+" "$BOOK_PATH/SKILL.md" 2>/dev/null || true)
   toc_count=0
   broken_count=0
 
@@ -235,7 +245,7 @@ if $HAS_TAGS; then
   if [[ -f "$BOOK_PATH/TAG-INDEX.json" ]]; then
     ok "TAG-INDEX.json exists (pages have tags)"
   else
-    error "Pages have tags in frontmatter but TAG-INDEX.json is missing. Run: skillbook tag-index $BOOK_PATH"
+    error "Pages have tags in frontmatter but TAG-INDEX.json is missing. Run: skillbook index $BOOK_PATH"
   fi
 
   # Check SKILL.md frontmatter has tags: true

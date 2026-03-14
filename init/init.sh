@@ -234,7 +234,9 @@ cat > "$BOOK_DIR/.gitignore" << GIEOF
 _build/
 .verify/
 node_modules/
+.env*
 .DS_Store
+*.log
 GIEOF
 
 echo "  ✅ .gitignore"

@@ -7,20 +7,39 @@
   "bin": {
     "skillbooks": "./dist/src/index.js"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "node scripts/build.mjs",
+    "prepublishOnly": "npm run build",
     "dev": "tsx src/index.ts",
     "test": "node --experimental-strip-types --test src/**/*.test.ts",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": ["skillbooks", "cli", "ai", "publish", "validate", "agent-skills"],
+  "keywords": [
+    "skillbooks",
+    "cli",
+    "ai",
+    "agents",
+    "publish",
+    "validate",
+    "agent-skills",
+    "ebook",
+    "knowledge-graph"
+  ],
   "author": "Skillbooks <hello@skillbooks.ai>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/skillbooks-ai/creator-tools.git"
+    "url": "git+https://github.com/skillbooks-ai/creator-tools.git"
   },
-  "homepage": "https://skillbooks.ai/developers",
+  "homepage": "https://skillbooks.ai",
+  "bugs": {
+    "url": "https://github.com/skillbooks-ai/creator-tools/issues"
+  },
   "dependencies": {
     "commander": "^14.0.3",
     "js-yaml": "^4.1.1"

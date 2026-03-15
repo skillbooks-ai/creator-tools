@@ -21,11 +21,12 @@ skillbooks init ./my-skillbook   # scaffold in a new directory
 
 Generates `SKILL.md`, `README.md`, `package.json`, and section directories with `00-overview.md` files. You'll be prompted for name, title, description, author, license, and initial sections.
 
-### `skillbooks validate <path>`
+### `skillbooks validate [path]`
 
 Validate a skillbook directory against the [Skillbook Format Spec](https://github.com/skillbooks-ai/skillbook).
 
 ```bash
+skillbooks validate              # validate current directory
 skillbooks validate ./my-skillbook
 ```
 
@@ -42,24 +43,25 @@ Checks:
 
 Exit codes: `0` = pass, `1` = errors, `2` = warnings only.
 
-### `skillbooks index <path>`
+### `skillbooks index [path]`
 
 Build `TAG-INDEX.json` and regenerate the SKILL.md table of contents.
 
 ```bash
-skillbooks index ./my-skillbook              # rebuild both
-skillbooks index ./my-skillbook --tags-only  # only TAG-INDEX.json
-skillbooks index ./my-skillbook --toc-only   # only SKILL.md TOC
-skillbooks index ./my-skillbook --dry-run    # preview without writing
+skillbooks index                 # rebuild both in current directory
+skillbooks index --tags-only     # only TAG-INDEX.json
+skillbooks index --toc-only      # only SKILL.md TOC
+skillbooks index --dry-run       # preview without writing
 ```
 
 Scans all content pages for `tags:` frontmatter and builds the tag→pages map. Reads the directory structure, extracts page titles, and regenerates the `## Table of Contents` section in SKILL.md.
 
-### `skillbooks publish <path>`
+### `skillbooks publish [path]`
 
 Validate and publish a skillbook to the Skillbooks platform.
 
 ```bash
+skillbooks publish               # publish current directory
 skillbooks publish ./my-skillbook
 ```
 

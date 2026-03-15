@@ -34,7 +34,7 @@ program
 program
   .command('validate')
   .description('Validate a skillbook directory before publishing')
-  .argument('<path>', 'Path to the skillbook directory')
+  .argument('[path]', 'Path to the skillbook directory', '.')
   .action(validateAction);
 
 program
@@ -46,7 +46,7 @@ program
 program
   .command('index')
   .description('Build TAG-INDEX.json and regenerate the SKILL.md table of contents')
-  .argument('<path>', 'Path to the skillbook directory')
+  .argument('[path]', 'Path to the skillbook directory', '.')
   .option('--tags-only', 'Only rebuild TAG-INDEX.json')
   .option('--toc-only', 'Only rebuild the SKILL.md table of contents')
   .option('--dry-run', 'Preview changes without writing files')
@@ -55,7 +55,7 @@ program
 program
   .command('publish')
   .description('Validate and publish a skillbook to Skillbooks')
-  .argument('<path>', 'Path to the skillbook directory')
+  .argument('[path]', 'Path to the skillbook directory', '.')
   .action(async (targetPath: string, _opts: Record<string, unknown>, command: Command) => {
     await publishAction(targetPath, command.optsWithGlobals());
   });

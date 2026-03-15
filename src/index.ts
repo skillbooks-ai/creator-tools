@@ -73,6 +73,7 @@ program
 program
   .command('signup')
   .description('Create a Skillbooks account and receive an API key')
+  .option('--force', 'Overwrite existing API key in .env')
   .option('--format <format>', 'Output format: text or json', 'text')
   .action(async (_opts: Record<string, unknown>, command: Command) => {
     await signupAction(command.optsWithGlobals());

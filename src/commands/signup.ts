@@ -39,8 +39,27 @@ async function writeEnvKey(apiKey: string): Promise<string> {
   return envPath;
 }
 
-export async function signupAction(options: GlobalOptions & JsonOptions): Promise<void> {
+export interface SignupOptions extends GlobalOptions, JsonOptions {
+  force?: boolean;
+}
+
+export async function signupAction(options: SignupOptions): Promise<void> {
   try {
+    // Check for existing key before hitting the API
+    if (!options.force) {
+      const envPath = join(process.cwd(), '.env');
+      try {
+        const existing = await readFile(envPath, 'utf8');
+        if (/^SKILLBOOKS_API_KEY\s*=\s*\S+/m.test(existing)) {
+          console.error('⚠ SKILLBOOKS_API_KEY already exists in .env');
+          console.error('  Use --force to overwrite, or edit .env manually.');
+          process.exit(1);
+        }
+      } catch {
+        // No .env yet — safe to proceed.
+      }
+    }
+
     const apiUrl = resolveApiUrl(options);
 
     const response = await apiRequest<SignupResponse>(new URL('/signup', apiUrl).toString(), {

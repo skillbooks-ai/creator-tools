@@ -26,7 +26,7 @@ export function resolveApiUrl(options: GlobalOptions): string {
 export function resolveApiKey(options: GlobalOptions): string {
   const key = options.key ?? process.env.SKILLBOOKS_API_KEY ?? process.env.SKILLBOOK_KEY;
   if (!key) {
-    throw new CliError('Missing API key. Pass --key or set SKILLBOOKS_API_KEY.');
+    throw new CliError('Missing API key. Run `skillbooks signup` to create one, or add SKILLBOOKS_API_KEY to .env');
   }
 
   return key;

@@ -96,17 +96,28 @@ skillbooks account --format json
 
 ## Authentication
 
-Commands that talk to the platform API (`publish`, `search`, `signup`, `account`) need an API key. Set it via:
+Commands that talk to the platform API (`publish`, `search`, `account`) need an API key.
+
+The fastest way to get started:
 
 ```bash
-# Environment variable (recommended)
+skillbooks signup
+```
+
+This creates your account and saves the API key to `.env` in the current directory. All commands automatically load `.env`, so you're ready to go.
+
+You can also set the key manually:
+
+```bash
+# .env file (recommended)
+SKILLBOOKS_API_KEY=sk_your_key_here
+
+# Environment variable
 export SKILLBOOKS_API_KEY=sk_your_key_here
 
 # Or pass it directly
 skillbooks account --key sk_your_key_here
 ```
-
-Get a key by running `skillbooks signup`.
 
 ## Custom API URL
 

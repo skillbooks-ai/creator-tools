@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import 'dotenv/config';
 import { readFileSync } from 'node:fs';
 import { Command } from 'commander';
 import { accountAction } from './commands/account.js';

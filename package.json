@@ -5,7 +5,7 @@
   "type": "module",
   "main": "dist/src/index.js",
   "bin": {
-    "skillbooks": "./dist/src/index.js"
+    "skillbook": "./dist/src/index.js"
   },
   "files": [
     "dist",

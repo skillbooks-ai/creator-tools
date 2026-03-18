@@ -7,7 +7,7 @@ import { indexAction } from './commands/index.js';
 import { initAction } from './commands/init.js';
 import { publishAction } from './commands/publish.js';
 import { searchAction } from './commands/search.js';
-import { signupAction } from './commands/signup.js';
+import { loginAction } from './commands/login.js';
 import { validateAction } from './commands/validate.js';
 import { CliError, DEFAULT_API_URL } from './lib/cli.js';
 
@@ -26,7 +26,7 @@ function readPackageVersion(): string {
 const program = new Command();
 
 program
-  .name('skillbooks')
+  .name('skillbook')
   .description('Skillbooks CLI — publish, search, and manage your AI skillbooks')
   .version(readPackageVersion(), '-V, --version', 'Print the CLI version')
   .option('--api-url <url>', 'Skillbooks API base URL', process.env.SKILLBOOKS_API ?? DEFAULT_API_URL)
@@ -71,12 +71,11 @@ program
   });
 
 program
-  .command('signup')
-  .description('Create a Skillbooks account and receive an API key')
-  .option('--force', 'Overwrite existing API key in .env')
+  .command('login')
+  .description('Authenticate the CLI with your Skillbooks API key')
   .option('--format <format>', 'Output format: text or json', 'text')
   .action(async (_opts: Record<string, unknown>, command: Command) => {
-    await signupAction(command.optsWithGlobals());
+    await loginAction(command.optsWithGlobals());
   });
 
 program

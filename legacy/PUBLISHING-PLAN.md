@@ -224,7 +224,7 @@ Proper signup, credit purchases, publisher payouts.
 8. Stripe Connect integration (publisher onboarding)
 9. Stripe Checkout integration (consumer credit packs)
 10. `/api/account` endpoints
-11. `skillbook signup` → `/start` page with both paths
+11. `skillbook login` → authenticate with API key from skillbooks.ai
 12. `skillbook account` wired to live API
 13. Publisher payout automation (monthly via Stripe Connect)
 

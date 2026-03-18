@@ -1,27 +1,27 @@
-# CLI Merge Spec — Unified `skillbooks` CLI
+# CLI Merge Spec — Unified `skillbook` CLI
 
 ## Goal
 
-Merge the bash creator-tools and the TS packages/cli into ONE public CLI: `@skillbooks/cli`, installed as `skillbooks`.
+Merge the bash creator-tools and the TS packages/cli into ONE public CLI: `@skillbooks/cli`, installed as `skillbook`.
 
 ## Target Commands
 
 | Command | Source | Description |
 |---------|--------|-------------|
-| `skillbooks init [path]` | bash creator-tools/init | Interactive scaffolding for new skillbook projects |
-| `skillbooks validate <path>` | bash creator-tools/validate (logic) + TS validate lib | Full validation with rich output |
-| `skillbooks index <path>` | bash creator-tools/index | Build TAG-INDEX.json + regenerate SKILL.md TOC |
-| `skillbooks publish <path>` | TS packages/cli/publish | Validate + upload to platform API |
-| `skillbooks search <query>` | TS packages/cli/search | Search the catalog |
-| `skillbooks account` | bash creator-tools/account + TS credits | Balance, usage totals, publisher status |
-| `skillbooks stats [book-id]` | TS packages/cli/stats | Usage/revenue stats for published books |
-| `skillbooks signup` | TS packages/cli/signup | Create account, get API key |
+| `skillbook init [path]` | bash creator-tools/init | Interactive scaffolding for new skillbook projects |
+| `skillbook validate <path>` | bash creator-tools/validate (logic) + TS validate lib | Full validation with rich output |
+| `skillbook index <path>` | bash creator-tools/index | Build TAG-INDEX.json + regenerate SKILL.md TOC |
+| `skillbook publish <path>` | TS packages/cli/publish | Validate + upload to platform API |
+| `skillbook search <query>` | TS packages/cli/search | Search the catalog |
+| `skillbook account` | bash creator-tools/account + TS credits | Balance, usage totals, publisher status |
+| `skillbook stats [book-id]` | TS packages/cli/stats | Usage/revenue stats for published books |
+| `skillbook login` | TS packages/cli/login | Authenticate with API key |
 
 ## Architecture
 
 - **Language:** TypeScript (the TS CLI has the right npm package shape)
 - **Framework:** Commander (already in use)
-- **Package:** `@skillbooks/cli` with `bin: { "skillbooks": "./dist/index.js" }`
+- **Package:** `@skillbooks/cli` with `bin: { "skillbook": "./dist/index.js" }`
 - **Validation:** Use `@skillbooks/validate` lib for structural checks, but PORT the bash validate.sh's rich output formatting and additional checks (package.json sync, metadata block, section overviews, TOC link validation, orphan detection, page length warnings)
 - **No bash dependency:** Everything in TypeScript. Users install with `npm install -g @skillbooks/cli`.
 - **API calls:** Use the existing lib/api.ts for platform interactions
@@ -59,7 +59,7 @@ The bash validator has checks the TS lib doesn't:
 - lib/api.ts (API client with key handling)
 - lib/cli.ts (error handling, option parsing)
 - commands/publish.ts (validate + upload flow)
-- commands/search.ts, commands/stats.ts, commands/signup.ts (thin API wrappers)
+- commands/search.ts, commands/stats.ts, commands/login.ts (thin API wrappers)
 - The `@skillbooks/validate` dependency (don't duplicate the lib, extend it)
 
 ## Output Location
@@ -77,7 +77,7 @@ Preserve the bash scripts in a `legacy/` dir for reference during the port.
   "description": "The Skillbooks CLI — create, validate, and publish skillbooks",
   "type": "module",
   "bin": {
-    "skillbooks": "./dist/index.js"
+    "skillbook": "./dist/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -103,8 +103,8 @@ Note: Do NOT depend on @skillbooks/validate (that's a monorepo internal package)
 ## Testing
 
 After build, verify these work:
-1. `skillbooks --version` → prints version
-2. `skillbooks --help` → shows all commands
-3. `skillbooks validate /Users/bodhi/.openclaw/workspace/skillbooks/building-skillbooks` → should pass with 0 errors and ~42 warnings (matching the bash validator output)
-4. `skillbooks init /tmp/test-skillbook` → interactive scaffolding creates valid structure
-5. `skillbooks index /Users/bodhi/.openclaw/workspace/skillbooks/building-skillbooks` → builds/updates TAG-INDEX.json and TOC
+1. `skillbook --version` → prints version
+2. `skillbook --help` → shows all commands
+3. `skillbook validate /Users/bodhi/.openclaw/workspace/skillbooks/building-skillbooks` → should pass with 0 errors and ~42 warnings (matching the bash validator output)
+4. `skillbook init /tmp/test-skillbook` → interactive scaffolding creates valid structure
+5. `skillbook index /Users/bodhi/.openclaw/workspace/skillbooks/building-skillbooks` → builds/updates TAG-INDEX.json and TOC

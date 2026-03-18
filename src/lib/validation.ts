@@ -283,14 +283,21 @@ export async function validateSkillbook(targetPath: string): Promise<ValidationR
         error(result, structureLines, `${section.name}/${pageName} — doesn't match NN-name.md pattern`);
       }
 
-      if (page.lineCount < 20) {
-        warn(result, structureLines, `${section.name}/${pageName} — only ${page.lineCount} lines (target: 40-100)`);
-      } else if (page.lineCount < 40) {
-        warn(result, structureLines, `${section.name}/${pageName} — ${page.lineCount} lines (target: 40-100, slightly short)`);
-      } else if (page.lineCount > 150) {
-        warn(result, structureLines, `${section.name}/${pageName} — ${page.lineCount} lines (target: 40-100, consider splitting)`);
-      } else if (page.lineCount > 100) {
-        warn(result, structureLines, `${section.name}/${pageName} — ${page.lineCount} lines (target: 40-100, slightly long)`);
+      const isOverview = pageName === '00-overview.md';
+      const minTarget = isOverview ? 20 : 40;
+      const maxTarget = isOverview ? 80 : 100;
+      const minHard = isOverview ? 10 : 20;
+      const maxHard = isOverview ? 120 : 150;
+      const targetLabel = `target: ${minTarget}-${maxTarget}`;
+
+      if (page.lineCount < minHard) {
+        warn(result, structureLines, `${section.name}/${pageName} — only ${page.lineCount} lines (${targetLabel})`);
+      } else if (page.lineCount < minTarget) {
+        warn(result, structureLines, `${section.name}/${pageName} — ${page.lineCount} lines (${targetLabel}, slightly short)`);
+      } else if (page.lineCount > maxHard) {
+        warn(result, structureLines, `${section.name}/${pageName} — ${page.lineCount} lines (${targetLabel}, consider splitting)`);
+      } else if (page.lineCount > maxTarget) {
+        warn(result, structureLines, `${section.name}/${pageName} — ${page.lineCount} lines (${targetLabel}, slightly long)`);
       }
 
       if (pageName !== '00-overview.md' && overviewContent && !overviewContent.includes(pageName)) {

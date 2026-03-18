@@ -10,24 +10,24 @@ npm install -g @skillbooks/cli
 
 ## Commands
 
-### `skillbooks init [path]`
+### `skillbook init [path]`
 
 Interactively scaffold a new skillbook project.
 
 ```bash
-skillbooks init                  # scaffold in current directory
-skillbooks init ./my-skillbook   # scaffold in a new directory
+skillbook init                  # scaffold in current directory
+skillbook init ./my-skillbook   # scaffold in a new directory
 ```
 
 Generates `SKILL.md`, `README.md`, `package.json`, and section directories with `00-overview.md` files. You'll be prompted for name, title, description, author, license, and initial sections.
 
-### `skillbooks validate [path]`
+### `skillbook validate [path]`
 
 Validate a skillbook directory against the [Skillbook Format Spec](https://github.com/skillbooks-ai/skillbook).
 
 ```bash
-skillbooks validate              # validate current directory
-skillbooks validate ./my-skillbook
+skillbook validate              # validate current directory
+skillbook validate ./my-skillbook
 ```
 
 Checks:
@@ -43,55 +43,58 @@ Checks:
 
 Exit codes: `0` = pass, `1` = errors, `2` = warnings only.
 
-### `skillbooks index [path]`
+### `skillbook index [path]`
 
 Build `TAG-INDEX.json` and regenerate the SKILL.md table of contents.
 
 ```bash
-skillbooks index                 # rebuild both in current directory
-skillbooks index --tags-only     # only TAG-INDEX.json
-skillbooks index --toc-only      # only SKILL.md TOC
-skillbooks index --dry-run       # preview without writing
+skillbook index                 # rebuild both in current directory
+skillbook index --tags-only     # only TAG-INDEX.json
+skillbook index --toc-only      # only SKILL.md TOC
+skillbook index --dry-run       # preview without writing
 ```
 
 Scans all content pages for `tags:` frontmatter and builds the tag→pages map. Reads the directory structure, extracts page titles, and regenerates the `## Table of Contents` section in SKILL.md.
 
-### `skillbooks publish [path]`
+### `skillbook publish [path]`
 
 Validate and publish a skillbook to the Skillbooks platform.
 
 ```bash
-skillbooks publish               # publish current directory
-skillbooks publish ./my-skillbook
+skillbook publish               # publish current directory
+skillbook publish ./my-skillbook
 ```
 
 Runs full validation first — if errors are found, publishing is aborted. Requires an API key (see Authentication below).
 
-### `skillbooks search <query>`
+### `skillbook search <query>`
 
 Search the Skillbooks catalog.
 
 ```bash
-skillbooks search "machine learning"
-skillbooks search "exam prep" --format json
+skillbook search "machine learning"
+skillbook search "exam prep" --format json
 ```
 
-### `skillbooks signup`
+### `skillbook login`
 
-Create a Skillbooks account and receive an API key.
+Authenticate the CLI with your Skillbooks API key.
 
 ```bash
-skillbooks signup
-skillbooks signup --format json
+skillbook login
+skillbook login --force          # overwrite existing key
+skillbook login --format json
 ```
 
-### `skillbooks account`
+Sign up at [skillbooks.ai/signup](https://skillbooks.ai/signup) to get your API key, then run `skillbook login` to authenticate.
+
+### `skillbook account`
 
 Show your account balance, usage totals, publisher status, and published books.
 
 ```bash
-skillbooks account
-skillbooks account --format json
+skillbook account
+skillbook account --format json
 ```
 
 ## Authentication
@@ -100,11 +103,14 @@ Commands that talk to the platform API (`publish`, `search`, `account`) need an 
 
 The fastest way to get started:
 
+1. Sign up at [skillbooks.ai/signup](https://skillbooks.ai/signup) to get your API key
+2. Run `skillbook login` to authenticate
+
 ```bash
-skillbooks signup
+skillbook login
 ```
 
-This creates your account and saves the API key to `.env` in the current directory. All commands automatically load `.env`, so you're ready to go.
+This validates your API key and saves it to `.env` in the current directory. All commands automatically load `.env`, so you're ready to go.
 
 You can also set the key manually:
 
@@ -116,7 +122,7 @@ SKILLBOOKS_API_KEY=sk_your_key_here
 export SKILLBOOKS_API_KEY=sk_your_key_here
 
 # Or pass it directly
-skillbooks account --key sk_your_key_here
+skillbook account --key sk_your_key_here
 ```
 
 ## Custom API URL
@@ -126,7 +132,7 @@ For self-hosted instances or development:
 ```bash
 export SKILLBOOKS_API=https://your-instance.example.com
 # or
-skillbooks account --api-url https://your-instance.example.com
+skillbook account --api-url https://your-instance.example.com
 ```
 
 ## Related

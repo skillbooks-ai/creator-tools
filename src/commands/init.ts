@@ -6,8 +6,10 @@ import { displayNameFromSlug, writeTextFile } from '../lib/skillbook.js';
 
 interface InitAnswers {
   slug: string;
+  type: 'reference' | 'guide';
   title: string;
   description: string;
+  keywords: string[];
   publisher: string;
   contentAuthor: string;
   contact: string;
@@ -54,8 +56,26 @@ async function collectAnswers(): Promise<InitAnswers> {
     throw new Error('Slug must be lowercase alphanumeric with hyphens (e.g. my-book).');
   }
 
+  console.log('');
+  console.log('  Every skillbook is one of two types:');
+  console.log('    reference — Source material agents look things up in');
+  console.log('               (encyclopedias, regulations, complete works)');
+  console.log('    guide    — Processes and methods agents follow');
+  console.log('               (how-to guides, frameworks, checklists)');
+  console.log('');
+  console.log('  A skillbook should be one type. If your content has both');
+  console.log('  reference material AND how-to instructions, split it into');
+  console.log('  two skillbooks and let them compose.');
+  console.log('');
+  const typeAnswer = await ask('  Type (reference/guide)', 'reference');
+  const type = typeAnswer === 'guide' ? 'guide' : 'reference';
+
   const title = await ask('  Title (human-readable)', displayNameFromSlug(slug));
   const description = await ask('  One-line description', `A skillbook about ${title}.`);
+  const keywordsAnswer = await ask('  Keywords (comma-separated, optional)');
+  const keywords = keywordsAnswer
+    ? keywordsAnswer.split(',').map((k) => k.trim()).filter(Boolean)
+    : [];
   const publisher = await ask('  Publisher (your name/handle)', 'anonymous');
   const contentAuthor = await ask('  Content author (press Enter if same as publisher)', publisher);
   const contact = await ask('  Contact email or URL (optional)');
@@ -67,8 +87,10 @@ async function collectAnswers(): Promise<InitAnswers> {
 
   return {
     slug,
+    type,
     title,
     description,
+    keywords,
     publisher,
     contentAuthor,
     contact,
@@ -95,6 +117,7 @@ export async function initAction(targetPath = '.'): Promise<void> {
 
     const metadataLines = [
       'metadata:',
+      `  skillbook-type: "${answers.type}"`,
       `  skillbook-title: "${answers.title}"`,
       `  skillbook-author: "${answers.contentAuthor}"`,
       '  skillbook-server: "https://skillbooks.ai"',
@@ -104,6 +127,10 @@ export async function initAction(targetPath = '.'): Promise<void> {
       `  skillbook-language: "${answers.language}"`,
       '  skillbook-verified: "false"',
     ];
+
+    if (answers.keywords.length > 0) {
+      metadataLines.push(`  skillbook-keywords: "${answers.keywords.join(', ')}"`);
+    }
 
     if (answers.contact) {
       metadataLines.push(`  skillbook-contact: "${answers.contact}"`);
@@ -164,6 +191,7 @@ ${answers.description}
       name: answers.slug,
       version: '1.0.0',
       description: answers.description,
+      ...(answers.keywords.length > 0 ? { keywords: answers.keywords } : {}),
       author: answers.publisher,
       license: answers.license,
       private: true,
@@ -175,6 +203,7 @@ ${answers.description}
         index: 'skillbooks index .',
       },
       skillbook: {
+        type: answers.type,
         title: answers.title,
         author: answers.contentAuthor,
         ...(answers.contact ? { contact: answers.contact } : {}),

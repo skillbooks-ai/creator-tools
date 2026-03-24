@@ -29,6 +29,14 @@ export function validateSkillMd(content: string): ValidationResult {
   result.errors.push(...errors);
   validateRequiredSkillFields(frontmatter, result);
 
+  // Validate skillbook-type (required, must be "reference" or "guide")
+  const skillbookType = frontmatter['skillbook-type'];
+  if (skillbookType === undefined || skillbookType === '') {
+    result.errors.push('SKILL.md frontmatter is missing required field "skillbook-type" (under metadata).');
+  } else if (skillbookType !== 'reference' && skillbookType !== 'guide') {
+    result.errors.push('SKILL.md frontmatter "skillbook-type" must be either "reference" or "guide".');
+  }
+
   if (frontmatter.version !== undefined) {
     const semverResult = validateSemver(String(frontmatter.version));
     result.errors.push(...semverResult.errors.map((error) => `SKILL.md version: ${error}`));
